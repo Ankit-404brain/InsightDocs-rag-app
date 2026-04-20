@@ -1,25 +1,28 @@
-import os
-from dotenv import load_dotenv
+from pydantic_settings import BaseSettings
 
-load_dotenv()
+class Settings(BaseSettings):
+    APP_NAME: str
+    APP_ENV: str
+    APP_HOST: str
+    APP_PORT: int
 
-class Settings:
-    APP_NAME: str = os.getenv("APP_NAME", "InsightDocs Backend")
-    APP_ENV: str = os.getenv("APP_ENV", "development")
-    APP_HOST: str = os.getenv("APP_HOST", "0.0.0.0")
-    APP_PORT: int = int(os.getenv("APP_PORT", 8000))
+    POSTGRES_DB: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_HOST: str
+    POSTGRES_PORT: int
 
-    POSTGRES_DB: str = os.getenv("POSTGRES_DB", "ragdb")
-    POSTGRES_USER: str = os.getenv("POSTGRES_USER", "raguser")
-    POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "ragpassword")
-    POSTGRES_HOST: str = os.getenv("POSTGRES_HOST", "postgres")
-    POSTGRES_PORT: int = int(os.getenv("POSTGRES_PORT", 5432))
+    REDIS_HOST: str
+    REDIS_PORT: int
 
-    REDIS_HOST: str = os.getenv("REDIS_HOST", "redis")
-    REDIS_PORT: int = int(os.getenv("REDIS_PORT", 6379))
+    WEAVIATE_URL: str
+    WEAVIATE_GRPC_HOST: str
+    WEAVIATE_GRPC_PORT: int
 
-    WEAVIATE_URL: str = os.getenv("WEAVIATE_URL", "http://weaviate:8080")
-    WEAVIATE_GRPC_HOST: str = os.getenv("WEAVIATE_GRPC_HOST", "weaviate")
-    WEAVIATE_GRPC_PORT: int = int(os.getenv("WEAVIATE_GRPC_PORT", 50051))
+    DATABASE_URL: str
+    REDIS_URL: str
+
+    class Config:
+        env_file = ".env"
 
 settings = Settings()
