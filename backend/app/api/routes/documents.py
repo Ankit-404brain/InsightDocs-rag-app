@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Depends, UploadFile, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 from app.db.session import SessionLocal
 from app.db.models import Document
-from app.Schemas.document import DocumentResponse
-from app.Services.storage import save_upload_file
+from app.schemas.document import DocumentResponse
+from app.services.storage import save_upload_file_sync
 from app.workers.tasks import process_document
 
 router = APIRouter()
@@ -33,27 +33,29 @@ def get_document(document_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Document not found")
     return document
 
-@router.post("/upload", response_model=DocumentResponse)
-async def upload_document(
-    background_tasks: BackgroundTasks,
-    file: UploadFile = File(...),
-    db: Session = Depends(get_db),
-):
-    if file.content_type not in ALLOWED_TYPES:
-        raise HTTPException(status_code=400, detail="Unsupported file type")
+@router.post("/upload")
+def upload_document(file: UploadFile, background_tasks: BackgroundTasks):
+    db = SessionLocal()
 
-    storage_path = await save_upload_file(file)
+    try:
+        # Save file to temp directory (outside project dir to avoid auto-reload)
+        file_path = save_upload_file_sync(file)
 
-    document = Document(
-        filename=file.filename,
-        content_type=file.content_type,
-        storage_path=storage_path,
-        status="UPLOADED",
-    )
-    db.add(document)
-    db.commit()
-    db.refresh(document)
+        doc = Document(
+            filename=file.filename,
+            storage_path=file_path,
+            status="UPLOADED"
+        )
 
-    background_tasks.add_task(process_document, document.id)
+        db.add(doc)
+        db.commit()
+        db.refresh(doc)
 
-    return document
+        doc_id = str(doc.id)
+    finally:
+        db.close()
+
+    # Queue background processing
+    background_tasks.add_task(process_document, doc_id)
+
+    return {"id": doc_id, "status": "UPLOADED"}

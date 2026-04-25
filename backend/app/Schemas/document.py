@@ -1,4 +1,3 @@
-from networkx import communicability_betweenness_centrality
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -19,5 +19,13 @@ export async function uploadDocument(file: File) {
 
 export async function listDocuments() {
   const response = await api.get("/api/documents");
+  return response.data;
+}
+
+export async function queryRAG(query: string) {
+  const response = await api.post("/api/chat/query", {
+    query, 
+  });
+
   return response.data;
 }

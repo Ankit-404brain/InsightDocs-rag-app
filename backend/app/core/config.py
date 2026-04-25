@@ -1,4 +1,8 @@
-from pydantic_settings import BaseSettings
+import os
+from dotenv import load_dotenv
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+load_dotenv()
 
 class Settings(BaseSettings):
     APP_NAME: str
@@ -22,7 +26,19 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     REDIS_URL: str
 
-    class Config:
-        env_file = ".env"
+    OPENAI_API_KEY: str = ""
+    LLAMA_CLOUD_API_KEY: str = ""
 
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    GEMINI_EMBED_MODEL: str = os.getenv("GEMINI_EMBED_MODEL", "gemini-embedding-2")
+    GEMINI_CHAT_MODEL: str = os.getenv("GEMINI_CHAT_MODEL", "gemini-3-flash-preview")
+
+
+
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        extra="ignore" 
+    )
+    
 settings = Settings()
